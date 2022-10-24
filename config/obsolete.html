@@ -1,0 +1,68 @@
+<style>
+  .unsupported-browser {
+    background-color: #e6a23c;
+    background-image: linear-gradient(#feefae, #fae692);
+    border-bottom: 1px solid #b3a569;
+    color: #211e14;
+  }
+  .unsupported-browser__inner {
+    width: 800px;
+    margin: 0 auto;
+    padding: 8px 0;
+    line-height: 42px;
+  }
+  .unsupported-browser__inner .unsupported-browser__left {
+    float: left;
+  }
+  .unsupported-browser__inner .unsupported-browser__right {
+    float: right;
+  }
+  .unsupported-browser__inner .unsupported-browser__clearfix {
+    clear: both;
+    line-height: 0;
+  }
+  .unsupported-browser__title,
+  .unsupported-browser__tips {
+    height: 21px;
+    line-height: 21px;
+  }
+</style>
+<div class="unsupported-browser">
+  <div class="unsupported-browser__inner">
+    <div class="unsupported-browser__left">
+      <h5 class="unsupported-browser__title">
+        请注意，本网站不再支持您目前使用的浏览器。
+      </h5>
+      <p class="unsupported-browser__tips">
+        我们建议升级到最新的
+        <a
+          href="https://www.microsoft.com/zh-cn/windows/microsoft-edge"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Microsoft Edge </a
+        >，
+        <a
+          href="https://www.google.cn/intl/zh-CN/chrome/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Google Chrome </a
+        >，或者
+        <a
+          href="https://www.mozilla.org/zh-CN/firefox/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Mozilla Firefox </a
+        >。
+      </p>
+    </div>
+    <div class="unsupported-browser__right">
+      <button type="button" id="obsoleteClose">
+        <span>关闭</span>
+      </button>
+    </div>
+    <div class="unsupported-browser__clearfix"></div>
+  </div>
+</div>
