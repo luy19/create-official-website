@@ -1,9 +1,9 @@
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 const path = require('path');
 const webpack = require('webpack');
-const merge = require('webpack-merge');
-const common = require('./webpack.common.js');
-const { DEVELOPMENT } = require('./constants.js');
+const { merge } = require('webpack-merge');
+const common = require('./webpack.common');
+const { DEVELOPMENT } = require('./constants');
 
 module.exports = merge(common, {
   mode: DEVELOPMENT,
@@ -12,11 +12,19 @@ module.exports = merge(common, {
   },
   devtool: 'eval-source-map',
   devServer: {
-    contentBase: path.join(__dirname, '../public'),
-    hot: true,
-    hotOnly: true,
-    stats: 'errors-only',
+    static: {
+      directory: path.join(__dirname, '..', 'public'),
+    },
+    compress: true,
+    hot: 'only',
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false,
+      },
+    },
   },
+  stats: true,
   module: {
     rules: [
       {
@@ -25,5 +33,4 @@ module.exports = merge(common, {
       },
     ],
   },
-  plugins: [new webpack.HotModuleReplacementPlugin()],
 });

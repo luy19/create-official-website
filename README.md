@@ -2,4 +2,4 @@
 
 ![create-official-website](https://img.shields.io/github/package-json/v/luy19/create-official-website)
 
-> 官网多页面模板
+> official website multi-page template

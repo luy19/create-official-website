@@ -1,3 +1,3 @@
 import 'core-js';
 import 'normalize.css';
-import '@/main.css';
+import '@/main.less';

@@ -1,24 +1,23 @@
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 const webpack = require('webpack');
-const merge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const TerserJSPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
-const ObsoleteWebpackPlugin = require('obsolete-webpack-plugin');
-const ScriptExtHtmlWebpackPlugin = require('script-ext-html-webpack-plugin');
-const fs = require('fs');
-const appInfo = require('./getAppInfo.js');
-const common = require('./webpack.common.js');
+const WebpackObsoletePlugin = require('webpack-obsolete-plugin');
+const appInfo = require('./getAppInfo');
+const common = require('./webpack.common');
 const {
   PRODUCTION,
   HASH_DIGEST_LENGTH,
   NODE_MODULES_REG,
   NODE_MODULES_WITH_NAME_REG,
-} = require('./constants.js');
+} = require('./constants');
 
+const fs = require('fs');
 const obsoleteBuffer = fs.readFileSync('./config/obsolete.html');
 const obsoleteTemplate = obsoleteBuffer.toString();
 
@@ -31,7 +30,7 @@ module.exports = merge(common, {
     filename: `js/[name].[chunkhash:${HASH_DIGEST_LENGTH}].js`,
   },
   optimization: {
-    moduleIds: 'hashed',
+    moduleIds: 'deterministic',
     runtimeChunk: 'single',
     splitChunks: {
       cacheGroups: {
@@ -51,7 +50,6 @@ module.exports = merge(common, {
     minimizer: [
       new TerserJSPlugin({
         parallel: true,
-        cache: true,
         terserOptions: {
           ie8: true,
           safari10: true,
@@ -63,18 +61,14 @@ module.exports = merge(common, {
           },
         },
       }),
-      new OptimizeCSSAssetsPlugin({
-        cssProcessorPluginOptions: {
+      new CssMinimizerPlugin({
+        minimizerOptions: {
           preset: ['default', { discardComments: { removeAll: true } }],
         },
       }),
     ],
   },
-  stats: {
-    children: false,
-    entrypoints: false,
-    modules: false,
-  },
+  stats: 'minimal',
   module: {
     rules: [
       {
@@ -93,25 +87,29 @@ module.exports = merge(common, {
     new webpack.DefinePlugin({
       'process.env.APP_INFO': JSON.stringify(appInfo),
     }),
-    new ObsoleteWebpackPlugin({
-      name: 'obsolete',
+    new WebpackObsoletePlugin({
       template: obsoleteTemplate,
+      isStrict: true,
     }),
-    new ScriptExtHtmlWebpackPlugin({
-      async: 'obsolete',
+    new CopyPlugin({
+      patterns: [
+        {
+          from: 'public',
+          globOptions: {
+            dot: false,
+            gitignore: true,
+            ignore: ['**/.DS_Store'],
+          },
+        },
+      ],
     }),
-    new CopyPlugin([
-      {
-        from: 'public',
-        ignore: ['.DS_Store'],
-      },
-    ]),
     new MiniCssExtractPlugin({
       filename: `css/[name].[contenthash:${HASH_DIGEST_LENGTH}].css`,
     }),
     new CompressionPlugin({
-      test: /\.(js)|(css)$/,
-      cache: true,
+      test: /\.(js|css)$/,
+      algorithm: 'gzip',
+      compressionOptions: { level: 1 },
       threshold: 8192,
     }),
   ],

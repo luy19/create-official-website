@@ -1,18 +1,15 @@
 /* eslint import/no-extraneous-dependencies: ["error", {"devDependencies": true}] */
 const path = require('path');
-
 const webpack = require('webpack');
-
 const StylelintPlugin = require('stylelint-webpack-plugin');
-
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const { HASH_DIGEST_LENGTH, NODE_MODULES_REG } = require('./constants.js');
-
+const ESLintPlugin = require('eslint-webpack-plugin');
+const { htmlWebpackPluginTemplateCustomizer } = require('template-ejs-loader');
+const { HASH_DIGEST_LENGTH, NODE_MODULES_REG } = require('./constants');
 const { publicPath } = require('../src/app.json');
+const routes = require('../src/routes');
 
-const routes = require('../src/routes.js');
-
-const routeNames = routes.map(route => route.name);
+const routeNames = routes.map((route) => route.name);
 if (
   routeNames.some(
     (name, index) =>
@@ -36,16 +33,29 @@ function generateEntries() {
 
 function excludeOtherRouteNames(routeName) {
   return routes
-    .filter(route => route.name !== routeName)
-    .map(route => route.name);
+    .filter((route) => route.name !== routeName)
+    .map((route) => route.name);
 }
 
 function generatePages() {
-  return routes.map(route => {
+  return routes.map((route) => {
     const { name, title, keywords, description } = route;
     return new HtmlWebpackPlugin({
       filename: `${name}.html`,
-      template: path.join(__dirname, '../src/pages', `${name}/${name}.ejs`),
+      template: htmlWebpackPluginTemplateCustomizer({
+        templatePath: path.join(
+          __dirname,
+          '../src/pages',
+          `${name}/${name}.ejs`,
+        ),
+        templateEjsLoaderOption: {
+          root: '',
+          data: {
+            title,
+            BASE_URL: publicPath,
+          },
+        },
+      }),
       favicon: path.join(__dirname, '../public/favicon.ico'),
       title,
       meta: {
@@ -78,19 +88,6 @@ module.exports = {
   module: {
     rules: [
       {
-        enforce: 'pre',
-        test: /\.js$/,
-        exclude: NODE_MODULES_REG,
-        use: {
-          loader: 'eslint-loader',
-          options: {
-            cache: true,
-            emitError: true,
-            emitWarning: true,
-          },
-        },
-      },
-      {
         test: /\.js$/,
         exclude: NODE_MODULES_REG,
         use: {
@@ -113,31 +110,40 @@ module.exports = {
       },
       {
         test: /\.ejs/,
-        use: {
-          loader: '@testerum/ejs-compiled-loader-webpack4-nodeps',
-          options: {
-            ejsOptions: {
-              compileDebug: true,
-            },
+        use: [
+          {
+            loader: 'html-loader',
           },
-        },
+          {
+            loader: 'template-ejs-loader',
+            options: {},
+          },
+        ],
       },
       {
         test: require.resolve('jquery'),
         use: [
           {
             loader: 'expose-loader',
-            options: 'jQuery',
+            options: {
+              exposes: 'jQuery',
+            },
           },
           {
             loader: 'expose-loader',
-            options: '$',
+            options: {
+              exposes: '$',
+            },
           },
         ],
       },
     ],
   },
   plugins: [
+    new ESLintPlugin({
+      emitError: true,
+      emitWarning: true,
+    }),
     new webpack.DefinePlugin({
       'process.env.BASE_URL': `"${publicPath}"`,
     }),
